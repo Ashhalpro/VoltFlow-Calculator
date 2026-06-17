@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Advanced Electrical Tools</title>
+<style>
+/* Base Reset & Layout Split */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    background: #fafafa;
+}
+
+/* ================= SIDE PANEL NAVIGATION ================= */
+.sidebar {
+    width: 240px;
+    height: 100vh;
+    background: #2c3e50;
+    color: #ecf0f1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    overflow-y: auto;
+}
+
+.sidebar-title {
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 20px 20px 20px;
+    border-bottom: 1px solid #34495e;
+    color: #3498db;
+}
+
+.sidebar-btn {
+    padding: 15px 20px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.sidebar-btn:hover {
+    background: #34495e;
+    color: #fff;
+}
+
+.sidebar-btn.active {
+    background: #1a252f;
+    color: #3498db;
+    border-left-color: #3498db;
+}
+
+/* Sidebar Sub-Dropdown Items */
+.sidebar-submenu {
+    display: none;
+    background: #1f2c39;
+    flex-direction: column;
+}
+
+.sidebar-submenu.open {
+    display: flex;
+}
+
+.submenu-btn {
+    padding: 10px 20px 10px 35px;
+    font-size: 13px;
+    color: #bdc3c7;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    border-left: 4px solid transparent;
+}
+
+.submenu-btn:hover {
+    background: #2c3e50;
+    color: #fff;
+}
+
+.submenu-btn.active {
+    color: #3498db;
+    background: #1a252f;
+    border-left-color: #3498db;
+}
+
+/* ================= MAIN CONTENT AREA ================= */
+.main-content {
+    margin-left: 240px; 
+    padding: 40px;
+    flex-grow: 1;
+    max-width: 800px;
+}
+
+.page-panel {
+    display: none;
+}
+
+.page-panel.active {
+    display: block;
+}
+
+/* Sub-tabs within pages */
+.tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.tab {
+    padding: 10px 15px;
+    background: #eee;
+    border: 1px solid #aaa;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.tab.active {
+    background: #ccc;
+    font-weight: bold;
+}
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Dynamic Battery Tool Visibility Switching */
+.bat-sub-tool {
+    display: none;
+}
+.bat-sub-tool.active {
+    display: block;
+}
+
+.row {
+    margin: 15px 0;
+}
+
+.controls-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+input, select {
+    padding: 6px;
+    width: 180px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 18px;
+    margin-top: 10px;
+    border: 1px solid #bbb;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+button:hover:not(:disabled) {
+    background: #e0e0e0;
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #999;
+    color: #fff;
+}
+
+.output {
+    background: #f5f5f5;
+    font-weight: bold;
+}
+
+.warning-text {
+    color: red; 
+    font-size: 13px; 
+    margin-top: 4px; 
+    display: none;
+}
+
+/* Scientific Sub-options Wrapper Layout */
+.sci-sub-options {
+    margin-top: 8px;
+    margin-left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.sci-sub-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+}
+
+.sci-sub-label input, .sci-sub-label select {
+    margin: 0;
+    width: auto;
+    padding: 2px;
+}
+
+/* ================= RESISTOR FINDER VISUALS ================= */
+.res-stack-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.res-input-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.res-label-spec {
+    font-weight: bold;
+    font-size: 15px;
+    min-width: 110px;
+    display: inline-block;
+}
+
+.swap-btn {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+    margin-top: 8px;
+}
+
+.swap-btn:hover {
+    transform: scale(1.1);
+}
+
+.color-display-container {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.color-band-block {
+    width: 75px;
+    height: 30px;
+    border: 1px solid #000;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    text-shadow: 0px 0px 2px #fff, 0px 0px 2px #fff;
+    color: #000;
+}
+
+.resistor-select {
+    width: 125px !important;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-title">Navigation Panel</div>
+    <div id="side_btn_calculator" class="sidebar-btn active" onclick="switchPage('calculator')">Calculator</div>
+    <div id="side_btn_converter" class="sidebar-btn" onclick="switchPage('converter')">Converter</div>
+    <div id="side_btn_resistor" class="sidebar-btn" onclick="switchPage('resistor')">Resistor Finder</div>
+    
+    <div id="side_btn_battery" class="sidebar-btn" onclick="switchPage('battery')">Battery Calculator</div>
+    <div id="bat_submenu" class="sidebar-submenu">
+        <div id="sub_btn_sec_bat_conv" class="submenu-btn active" onclick="jumpToBatterySection('sec_bat_conv')">↳ Conversions</div>
+        <div id="sub_btn_sec_bat_life" class="submenu-btn" onclick="jumpToBatterySection('sec_bat_life')">↳ Battery Life</div>
+        <div id="sub_btn_sec_bat_limit" class="submenu-btn" onclick="jumpToBatterySection('sec_bat_limit')">↳ Current Limit</div>
+        <div id="sub_btn_sec_bat_sag" class="submenu-btn" onclick="jumpToBatterySection('sec_bat_sag')">↳ Voltage Sag</div>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <div id="calculator_page" class="page-panel active">
+        <h1>Electrical Calculator</h1>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showCalcTab('V',this)">Voltage</div>
+            <div class="tab" onclick="showCalcTab('P',this)">Wattage</div>
+            <div class="tab" onclick="showCalcTab('I',this)">Current</div>
+            <div class="tab" onclick="showCalcTab('R',this)">Resistance</div>
+        </div>
+
+        <div id="V" class="panel active">
+            <h3>Calculate Voltage</h3>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="v1_type" onchange="checkCalc('V')"></select>
+                    <input id="v1" type="number" oninput="checkCalc('V')">
+                </div>
+                <div id="v1_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="v2_type" onchange="checkCalc('V')"></select>
+                    <input id="v2" type="number" oninput="checkCalc('V')">
+                </div>
+                <div id="v2_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <button id="v_btn" disabled onclick="solveCalc('V')">Calculate</button>
+            <div class="row">
+                <div class="controls-line">
+                    <span style="min-width: 110px; display: inline-block;">Output Voltage:</span>
+                    <input id="v_out" readonly class="output">
+                </div>
+                <div id="v_out_warn" class="warning-text">This output exceeds 18 digit limit.</div>
+            </div>
+        </div>
+
+        <div id="P" class="panel">
+            <h3>Calculate Wattage</h3>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="p1_type" onchange="checkCalc('P')"></select>
+                    <input id="p1" type="number" oninput="checkCalc('P')">
+                </div>
+                <div id="p1_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="p2_type" onchange="checkCalc('P')"></select>
+                    <input id="p2" type="number" oninput="checkCalc('P')">
+                </div>
+                <div id="p2_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <button id="p_btn" disabled onclick="solveCalc('P')">Calculate</button>
+            <div class="row">
+                <div class="controls-line">
+                    <span style="min-width: 110px; display: inline-block;">Output Wattage:</span>
+                    <input id="p_out" readonly class="output">
+                </div>
+                <div id="p_out_warn" class="warning-text">This output exceeds 18 digit limit.</div>
+            </div>
+        </div>
+
+        <div id="I" class="panel">
+            <h3>Calculate Current</h3>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="i1_type" onchange="checkCalc('I')"></select>
+                    <input id="i1" type="number" oninput="checkCalc('I')">
+                </div>
+                <div id="i1_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="i2_type" onchange="checkCalc('I')"></select>
+                    <input id="i2" type="number" oninput="checkCalc('I')">
+                </div>
+                <div id="i2_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <button id="i_btn" disabled onclick="solveCalc('I')">Calculate</button>
+            <div class="row">
+                <div class="controls-line">
+                    <span style="min-width: 110px; display: inline-block;">Output Current:</span>
+                    <input id="i_out" readonly class="output">
+                </div>
+                <div id="i_out_warn" class="warning-text">This output exceeds 18 digit limit.</div>
+            </div>
+        </div>
+
+        <div id="R" class="panel">
+            <h3>Calculate Resistance</h3>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="r1_type" onchange="checkCalc('R')"></select>
+                    <input id="r1" type="number" oninput="checkCalc('R')">
+                </div>
+                <div id="r1_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="r2_type" onchange="checkCalc('R')"></select>
+                    <input id="r2" type="number" oninput="checkCalc('R')">
+                </div>
+                <div id="r2_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <button id="r_btn" disabled onclick="solveCalc('R')">Calculate</button>
+            <div class="row">
+                <div class="controls-line">
+                    <span style="min-width: 110px; display: inline-block;">Output Resistance:</span>
+                    <input id="r_out" readonly class="output">
+                </div>
+                <div id="r_out_warn" class="warning-text">This output exceeds 18 digit limit.</div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="converter_page" class="page-panel">
+        <h1>Electrical Converter</h1>
+
+        <div class="tabs">
+            <div id="conv_tab_V" class="tab active" onclick="switchConvTab('V')">Voltage</div>
+            <div id="conv_tab_P" class="tab" onclick="switchConvTab('P')">Wattage</div>
+            <div id="conv_tab_I" class="tab" onclick="switchConvTab('I')">Current</div>
+            <div id="conv_tab_R" class="tab" onclick="switchConvTab('R')">Resistance</div>
+        </div>
+
+        <h3 id="conv_title">Convert Voltage</h3>
+
+        <div class="row">
+            <div class="controls-line">
+                <select id="conv_from_type"></select>
+                <input id="conv_in" type="number" placeholder="Enter value">
+            </div>
+        </div>
+
+        <div class="row">
+            <button id="conv_btn" onclick="runConversion()">Convert</button>
+        </div>
+
+        <div class="row" style="display: flex; flex-direction: column; align-items: flex-start;">
+            <div class="controls-line">
+                <select id="conv_to_type"></select>
+                <input id="conv_out" readonly class="output">
+                
+                <label id="conv_sci_label" style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; font-size: 14px; margin-left: 6px;">
+                    <input type="checkbox" id="conv_sci" onchange="handleManualSciToggle()" style="margin: 0; cursor: pointer; width: auto;"> Give output in scientific notation
+                </label>
+            </div>
+
+            <div id="sci_sub_panel" class="sci-sub-options">
+                <label class="sci-sub-label" id="lbl_mode_pow"><input type="radio" id="mode_pow" name="sci_format" value="pow" checked onchange="runConversion()"> Give in *10ˣ</label>
+                <label class="sci-sub-label" id="lbl_mode_e"><input type="radio" id="mode_e" name="sci_format" value="e" onchange="runConversion()"> Give in e±X</label>
+                <label class="sci-sub-label" id="lbl_decimals">Decimal places: 
+                    <select id="dec_places" onchange="runConversion()">
+                        <option value="sig" selected>Round off to first sig. digit</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                        <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="resistor_page" class="page-panel">
+        <h1>Resistor Color Code Finder</h1>
+        <p style="color: #666; font-size: 14px; margin-top:-10px; margin-bottom: 25px;">Find color bands from resistance values, or find resistance values from color bands.</p>
+
+        <div class="res-stack-container">
+            <div id="res_inputs_wrapper">
+                <div id="res_mode_a_container" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="res-input-row"><span class="res-label-spec">Ohms:</span><input id="res_ohms_in" type="text" placeholder="e.g. 470, 1k, 2.2M" style="width: 220px;"></div>
+                    <div id="res_ohms_warn" class="warning-text">The input should have 2 or less significant digits.</div>
+                    <div class="res-input-row"><span class="res-label-spec">Tolerance:</span>
+                        <select id="res_ohms_tol_select" style="width: 232px;">
+                            <option value="Brown" selected>Brown (1%)</option><option value="Red">Red (2%)</option><option value="Gold">Gold (5%)</option><option value="Silver">Silver (10%)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="res_mode_b_container" style="display: none; flex-direction: column; gap: 10px;">
+                    <div class="res-input-row">
+                        <span class="res-label-spec">Resistor Color:</span>
+                        <select id="band1" class="resistor-select">
+                            <option value="0" disabled>Black</option><option value="1" selected>Brown</option><option value="2">Red</option><option value="3">Orange</option><option value="4">Yellow</option><option value="5">Green</option><option value="6">Blue</option><option value="7">Purple</option><option value="8" disabled>Gold</option><option value="9" disabled>Silver</option><option value="10" disabled>White</option>
+                        </select>
+                        <select id="band2" class="resistor-select">
+                            <option value="0" selected>Black</option><option value="1">Brown</option><option value="2">Red</option><option value="3">Orange</option><option value="4">Yellow</option><option value="5">Green</option><option value="6">Blue</option><option value="7">Purple</option><option value="8">Gray</option><option value="9">White</option><option value="10" disabled>Gold</option>
+                        </select>
+                        <select id="band3" class="resistor-select">
+                            <option value="1" selected>Black</option>
+                            <option value="10">Brown</option>
+                            <option value="100">Red</option>
+                            <option value="1000">Orange</option>
+                            <option value="10000">Yellow</option>
+                            <option value="100000">Green</option>
+                            <option value="1000000">Blue</option>
+                            <option value="10000000">Purple</option>
+                            <option value="100000000">Gray</option>
+                            <option value="1000000000">White</option>
+                            <option value="0.1">Gold</option>
+                            <option value="0.01">Silver</option>
+                        </select>
+                        <select id="band4" class="resistor-select">
+                            <option value="1" disabled>Black</option><option value="1" selected>Brown (1%)</option><option value="2">Red (2%)</option><option value="3" disabled>Orange</option><option value="4" disabled>Yellow</option><option value="0.5" disabled>Green</option><option value="0.25" disabled>Blue</option><option value="0.1" disabled>Purple</option><option value="5">Gold (5%)</option><option value="10">Silver (10%)</option><option value="20" disabled>White</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-line" style="margin-top: 5px;">
+                <button id="res_convert_btn" onclick="triggerResistorExecution()" style="margin-top: 0; min-width: 120px;">Convert</button>
+                <button id="res_swap_btn" class="swap-btn" onclick="toggleResistorMode()">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 8L15 4M19 8L15 12M19 8H5" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M5 16L9 20M5 16L9 12M5 16H19" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="res_outputs_wrapper" style="margin-top: 5px;">
+                <div id="res_mode_a_output" class="res-input-row">
+                    <span class="res-label-spec">Resistor Color:</span>
+                    <div class="color-display-container">
+                        <div id="disp_band1" class="color-band-block" style="background: #8B4513; color: #fff;">Brown</div>
+                        <div id="disp_band2" class="color-band-block" style="background: #000; color: #fff;">Black</div>
+                        <div id="disp_band3" class="color-band-block" style="background: #000; color: #fff;">Black</div>
+                        <div id="disp_band4" class="color-band-block" style="background: #8B4513; color: #fff;">Brown</div>
+                    </div>
+                </div>
+                <div id="res_mode_b_output" class="res-input-row" style="display: none;">
+                    <span class="res-label-spec">Calculated Ohms:</span>
+                    <input id="res_ohms_out" readonly class="output" style="width: 220px; font-weight: bold;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="battery_page" class="page-panel">
+        <h1>Battery Calculator</h1>
+
+        <div id="sec_bat_conv" class="bat-sub-tool active">
+            <div class="tabs">
+                <div id="bat_tab_V" class="tab active" onclick="switchBatTab('V')">Voltage</div>
+                <div id="bat_tab_Wh" class="tab" onclick="switchBatTab('Wh')">Watt-hours</div>
+                <div id="bat_tab_Ah" class="tab" onclick="switchBatTab('Ah')">Amp-hours</div>
+            </div>
+
+            <h3 id="bat_title">Calculate Voltage</h3>
+
+            <div class="row">
+                <div class="controls-line">
+                    <select id="bat_in1_type" onchange="checkBatTabConversion()"></select>
+                    <input id="bat_in1" type="number" placeholder="Enter value" oninput="checkBatTabConversion()">
+                </div>
+                <div id="bat_in1_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <div class="controls-line">
+                    <select id="bat_in2_type" onchange="checkBatTabConversion()"></select>
+                    <input id="bat_in2" type="number" placeholder="Enter value" oninput="checkBatTabConversion()">
+                </div>
+                <div id="bat_in2_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <button id="bat_calc_btn" disabled onclick="runBatConversion()">Calculate</button>
+            </div>
+            
+            <div class="row" style="display: flex; flex-direction: column; align-items: flex-start;">
+                <div class="controls-line">
+                    <select id="bat_out_type" onchange="runBatConversion()"></select>
+                    <input id="bat_out" readonly class="output">
+                    
+                    <label id="bat_sci_label" style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; font-size: 14px; margin-left: 6px;">
+                        <input type="checkbox" id="bat_sci" onchange="handleBatSciToggle()" style="margin: 0; cursor: pointer; width: auto;"> Give output in scientific notation
+                    </label>
+                </div>
+
+                <div id="bat_sci_sub_panel" class="sci-sub-options">
+                    <label class="sci-sub-label" id="lbl_bat_pow"><input type="radio" id="bat_mode_pow" name="bat_sci_format" value="pow" checked onchange="runBatConversion()"> Give in *10ˣ</label>
+                    <label class="sci-sub-label" id="lbl_bat_e"><input type="radio" id="bat_mode_e" name="bat_sci_format" value="e" onchange="runBatConversion()"> Give in e±X</label>
+                    <label class="sci-sub-label" id="lbl_bat_decimals">Decimal places: 
+                        <select id="bat_dec_places" onchange="runBatConversion()">
+                            <option value="sig" selected>Round off to first sig. digit</option>
+                            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec_bat_life" class="bat-sub-tool">
+            <h3>Check Battery Life</h3>
+            <div class="row">
+                <div class="res-input-row">
+                    <span class="res-label-spec">Load:</span>
+                    <select id="life_load_unit" onchange="checkBatteryLife()"><option value="1">Amps</option><option value="0.001">mA</option></select>
+                    <input id="life_load_val" type="number" placeholder="Value" style="width: 136px;" oninput="checkBatteryLife()">
+                </div>
+                <div id="life_load_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <div class="res-input-row">
+                    <span class="res-label-spec">Battery Capacity:</span>
+                    <select id="life_cap_unit" onchange="checkBatteryLife()"><option value="1">Amp-hour(s)</option><option value="0.001">mAh</option></select>
+                    <input id="life_cap_val" type="number" placeholder="Value" style="width: 106px;" oninput="checkBatteryLife()">
+                </div>
+                <div id="life_cap_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <button id="life_calc_btn" disabled onclick="calculateBatteryLife()">Calculate</button>
+            </div>
+            <div class="row" style="display: flex; flex-direction: column; align-items: flex-start;">
+                <div class="controls-line">
+                    <span class="res-label-spec">Longevity:</span>
+                    <select id="life_out_unit" onchange="calculateBatteryLife()" style="width: 100px;">
+                        <option value="years">Years</option><option value="days">Days</option><option value="hours" selected>Hours</option>
+                        <option value="mins">Minutes</option><option value="secs">Seconds</option>
+                    </select>
+                    <input id="life_out_val" readonly class="output">
+                    <label id="life_sci_label" style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px;">
+                        <input type="checkbox" id="life_sci" onchange="calculateBatteryLife()" style="margin: 0; width: auto;"> Give output in scientific notation
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec_bat_limit" class="bat-sub-tool">
+            <h3>Check Battery Current Limit</h3>
+            <div class="row">
+                <div class="res-input-row">
+                    <span class="res-label-spec">Voltage:</span>
+                    <input id="limit_volts" type="number" placeholder="Value" oninput="checkCurrentLimit()"> volts
+                </div>
+                <div id="limit_v_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <div class="res-input-row">
+                    <span class="res-label-spec">Resistance:</span>
+                    <input id="limit_ohms" type="number" placeholder="Value" oninput="checkCurrentLimit()"> ohms
+                </div>
+                <div id="limit_r_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <button id="limit_calc_btn" disabled onclick="calculateCurrentLimit()">Calculate</button>
+            </div>
+            <div class="row">
+                <div class="res-input-row">
+                    <span class="res-label-spec">Current:</span>
+                    <input id="limit_out" readonly class="output"> amps
+                </div>
+            </div>
+        </div>
+
+        <div id="sec_bat_sag" class="bat-sub-tool">
+            <h3>Check Voltage Sag Amount</h3>
+            <div class="row">
+                <div class="res-input-row">
+                    <span class="res-label-spec">Resistance:</span>
+                    <input id="sag_ohms" type="number" placeholder="Internal R ohms" oninput="checkVoltageSag()"> ohms
+                </div>
+                <div id="sag_r_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <div class="res-input-row">
+                    <span class="res-label-spec">Load:</span>
+                    <select id="sag_load_unit" onchange="checkVoltageSag()"><option value="1">Amps</option><option value="0.001">mA</option></select>
+                    <input id="sag_load_val" type="number" placeholder="Value" style="width: 136px;" oninput="checkVoltageSag()">
+                </div>
+                <div id="sag_load_warn" class="warning-text">The max input limit is 999,999,999. Try a smaller number instead</div>
+            </div>
+            <div class="row">
+                <button id="sag_calc_btn" disabled onclick="calculateVoltageSag()">Calculate</button>
+            </div>
+            <div class="row">
+                <div class="res-input-row">
+                    <span class="res-label-spec">Amount of sag:</span>
+                    <input id="sag_out" readonly class="output"> volts
+                </div>
+            </div>
+        </div>
+
+    </div>
+<h6 style="font-style: italic; text-align: center; margin-top: 60px; color: #888;">
+    This project is entirely made by Ashhal Abbas.
+</h6>
+</div>
+
+<script>
+// ================= SHARED DATA & STATE =================
+const types = ["V","I","P","R"];
+const unitLabels = { "V": "Volt(s)", "I": "Amp(s)", "P": "Watt(s)", "R": "Ohm(s)" };
+const convUnits = { "V": { title: "Voltage", noun: "volt" }, "P": { title: "Wattage", noun: "watt" }, "I": { title: "Current", noun: "amp" }, "R": { title: "Resistance", noun: "ohm" } };
+
+const prefixData = [
+    { name: "Exa", power: 1e18 }, { name: "Peta", power: 1e15 }, { name: "Tera", power: 1e12 },
+    { name: "Giga", power: 1e9 }, { name: "Mega", power: 1e6 }, { name: "Kilo", power: 1e3 },
+    { name: "", power: 1e0 }, { name: "Milli", power: 1e-3 }, { name: "Micro", power: 1e-6 },
+    { name: "Nano", power: 1e-9 }, { name: "Pico", power: 1e-12 }, { name: "Femto", power: 1e-15 },
+    { name: "Atto", power: 1e-18 }
+];
+
+let currentConvTab = "V";
+let currentBatTab = "V";
+let userSciPreference = false;
+let userBatSciPreference = false;
+let resistorMode = "A"; 
+
+const colorHexMap = {
+    "Black": { bg: "#000000", text: "#ffffff" }, "Brown": { bg: "#8B4513", text: "#ffffff" },
+    "Red": { bg: "#FF0000", text: "#ffffff" }, "Orange": { bg: "#FFA500", text: "#000000" },
+    "Yellow": { bg: "#FFFF00", text: "#000000" }, "Green": { bg: "#008000", text: "#ffffff" },
+    "Blue": { bg: "#0000FF", text: "#ffffff" }, "Purple": { bg: "#800080", text: "#ffffff" },
+    "Gray": { bg: "#808080", text: "#ffffff" }, "White": { bg: "#FFFFFF", text: "#000000" },
+    "Gold": { bg: "#D4AF37", text: "#000000" }, "Silver": { bg: "#C0C0C0", text: "#000000" }
+};
+const valueToColorArray = ["Black", "Brown", "Red", "Orange", "Yellow", "Green", "Blue", "Purple", "Gray", "White"];
+
+// ================= SIDEBAR NAVIGATION LOGIC =================
+function switchPage(pageTarget) {
+    document.querySelectorAll('.page-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+
+    document.getElementById(pageTarget + '_page').classList.add('active');
+    document.getElementById('side_btn_' + pageTarget).classList.add('active');
+
+    // Control sidebar dropdown submenu for Battery Calculator
+    let submenu = document.getElementById('bat_submenu');
+    if (pageTarget === 'battery') {
+        submenu.classList.add('open');
+        switchBatTab(currentBatTab);
+    } else {
+        submenu.classList.remove('open');
+    }
+
+    if(pageTarget === 'converter') switchConvTab(currentConvTab);
+}
+
+function jumpToBatterySection(sectionId) {
+    // Switch tracking focus to battery main page view block
+    switchPage('battery');
+    
+    // Hide all internal sub-tools inside the battery panel view
+    document.querySelectorAll('.bat-sub-tool').forEach(tool => tool.classList.remove('active'));
+    // Clear active styling across sub navigation buttons
+    document.querySelectorAll('.sidebar-submenu .submenu-btn').forEach(btn => btn.classList.remove('active'));
+    
+    // Unveil targeted tool container block view window matching clicked path id string loop
+    document.getElementById(sectionId).classList.add('active');
+    document.getElementById('sub_btn_' + sectionId).classList.add('active');
+}
+
+// ================= CORE INITIALIZATION =================
+function init(){
+    types.forEach(tab => {
+        ["1", "2"].forEach(num => {
+            let sel = document.getElementById(tab.toLowerCase() + num + "_type");
+            if (sel) {
+                types.forEach(t => {
+                    let opt = document.createElement("option"); opt.value = t; opt.text = unitLabels[t];
+                    if (t === tab) opt.disabled = true;
+                    sel.appendChild(opt);
+                });
+            }
+        });
+    });
+    setDefaultCalc("V","I","R"); setDefaultCalc("P","I","V"); setDefaultCalc("I","V","R"); setDefaultCalc("R","V","I");
+    populateConvDropdowns();
+    updateSubPanelUIVisibility(); 
+    updateBatSubPanelVisibility();
+}
+
+function setDefaultCalc(tab,a,b){
+    document.getElementById(tab.toLowerCase()+"1_type").value=a; document.getElementById(tab.toLowerCase()+"2_type").value=b;
+}
+
+function showCalcTab(id,el){
+    document.querySelectorAll("#calculator_page .panel").forEach(p=>p.classList.remove("active"));
+    document.querySelectorAll("#calculator_page .tab").forEach(t=>t.classList.remove("active"));
+    document.getElementById(id).classList.add("active"); el.classList.add("active");
+}
+
+function checkCalc(tab){
+    let t1 = document.getElementById(tab.toLowerCase()+"1_type").value; let t2 = document.getElementById(tab.toLowerCase()+"2_type").value;
+    let v1 = document.getElementById(tab.toLowerCase()+"1").value; let v2 = document.getElementById(tab.toLowerCase()+"2").value;
+    let btn = document.getElementById(tab.toLowerCase()+"_btn");
+    
+    // Hide warning states immediately on change or typing
+    document.getElementById(tab.toLowerCase()+"1_warn").style.display = "none";
+    document.getElementById(tab.toLowerCase()+"2_warn").style.display = "none";
+    document.getElementById(tab.toLowerCase()+"_out_warn").style.display = "none";
+    
+    btn.disabled = (v1 === "" || v2 === "" || t1 === t2);
+}
+
+function solveCalc(tab){
+    let t1=document.getElementById(tab.toLowerCase()+"1_type").value; let t2=document.getElementById(tab.toLowerCase()+"2_type").value;
+    let v1=Number(document.getElementById(tab.toLowerCase()+"1").value); let v2=Number(document.getElementById(tab.toLowerCase()+"2").value);
+    let btn = document.getElementById(tab.toLowerCase()+"_btn");
+    let warn1 = document.getElementById(tab.toLowerCase()+"1_warn"); let warn2 = document.getElementById(tab.toLowerCase()+"2_warn");
+    let outWarn = document.getElementById(tab.toLowerCase()+"_out_warn");
+
+    let hasInputError = false;
+    if(Math.abs(v1) > 999999999){ warn1.style.display = "block"; hasInputError = true; }
+    if(Math.abs(v2) > 999999999){ warn2.style.display = "block"; hasInputError = true; }
+    if(hasInputError){ return; }
+
+    let result=0; const map = {}; map[t1]=v1; map[t2]=v2;
+    if(tab==="V"){
+        if(map.I !== undefined && map.R !== undefined) result = map.I * map.R;
+        else if(map.P !== undefined && map.I !== undefined) result = map.P / map.I;
+        else if(map.P !== undefined && map.R !== undefined) result = Math.sqrt(map.P * map.R);
+    }
+    if(tab==="P"){
+        if(map.V !== undefined && map.I !== undefined) result = map.V * map.I;
+        else if(map.I !== undefined && map.R !== undefined) result = Math.pow(map.I,2) * map.R;
+        else if(map.V !== undefined && map.R !== undefined) result = Math.pow(map.V,2) / map.R;
+    }
+    if(tab==="I"){
+        if(map.V !== undefined && map.R !== undefined) result = map.V / map.R;
+        else if(map.P !== undefined && map.V !== undefined) result = map.P / map.V;
+        else if(map.P !== undefined && map.R !== undefined) result = Math.sqrt(map.P / map.V);
+    }
+    if(tab==="R"){
+        if(map.V !== undefined && map.I !== undefined) result = map.V / map.I;
+        else if(map.V !== undefined && map.P !== undefined) result = Math.pow(map.V,2) / map.P;
+        else if(map.P !== undefined && map.I !== undefined) result = map.P / Math.pow(map.I,2);
+    }
+    if(!isFinite(result) || Math.abs(result) >= 1e18){ outWarn.style.display = "block"; result = "-"; }
+    document.getElementById(tab.toLowerCase()+"_out").value=result;
+}
+
+// ================= CONVERTER ENGINE CONTROLS =================
+function switchConvTab(tab) {
+    currentConvTab = tab;
+    document.querySelectorAll("#converter_page .tab").forEach(t => t.classList.remove('active'));
+    document.getElementById("conv_tab_" + tab).classList.add("active");
+    document.getElementById("conv_title").innerText = "Convert " + convUnits[tab].title;
+    populateConvDropdowns();
+    document.getElementById("conv_in").value = ""; document.getElementById("conv_out").value = "";
+    document.getElementById("conv_sci").checked = userSciPreference;
+    updateSubPanelUIVisibility();
+}
+
+// ================= CONVERTER ENGINE CONTROLS =================
+function populateConvDropdowns() {
+    let fromSel = document.getElementById("conv_from_type"); let toSel = document.getElementById("conv_to_type");
+    fromSel.innerHTML = ""; toSel.innerHTML = ""; let noun = convUnits[currentConvTab].noun;
+    prefixData.forEach(p => {
+        let full = p.name ? (p.name + noun) : (noun.charAt(0).toUpperCase() + noun.slice(1));
+        let o1 = document.createElement("option"); o1.value = p.power; o1.text = "From " + full; fromSel.appendChild(o1);
+        let o2 = document.createElement("option"); o2.value = p.power; o2.text = "To " + full; toSel.appendChild(o2);
+    });
+    fromSel.selectedIndex = 5; toSel.selectedIndex = 6;
+}
+
+function handleManualSciToggle() {
+    userSciPreference = document.getElementById("conv_sci").checked; updateSubPanelUIVisibility(); runConversion();
+}
+
+function updateSubPanelUIVisibility() {
+    let isActive = document.getElementById("conv_sci").checked;
+    let r1 = document.getElementById("mode_pow"); let r2 = document.getElementById("mode_e"); let s1 = document.getElementById("dec_places");
+    let l1 = document.getElementById("lbl_mode_pow"); let l2 = document.getElementById("lbl_mode_e"); let l3 = document.getElementById("lbl_decimals");
+    r1.disabled = !isActive; r2.disabled = !isActive; s1.disabled = !isActive;
+    let op = isActive ? "1" : "0.4"; let cur = isActive ? "pointer" : "not-allowed";
+    l1.style.opacity = op; l1.style.cursor = cur; r1.style.cursor = cur;
+    l2.style.opacity = op; l2.style.cursor = cur; r2.style.cursor = cur;
+    l3.style.opacity = op; l3.style.cursor = cur; s1.style.cursor = cur;
+}
+
+function formatScientificUniversal(value, decValue, modeName) {
+    if (value === 0) return "0";
+    let precision = (decValue === "sig") ? 0 : parseInt(decValue, 10);
+    let expStr = value.toExponential(precision); let parts = expStr.split('e');
+    let coefficient = parts[0]; let exponent = parseInt(parts[1], 10);
+    let formatChosen = document.querySelector(`input[name="${modeName}"]:checked`).value;
+    if (formatChosen === "pow") {
+        return coefficient + "*10" + convertToSuperscript(exponent);
+    } else {
+        return coefficient + "e" + (exponent >= 0 ? "+" : "") + exponent;
+    }
+}
+
+function convertToSuperscript(num) {
+    const map = {'-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'};
+    return num.toString().split('').map(char => map[char] || char).join('');
+}
+
+function runConversion() {
+    let inStr = document.getElementById("conv_in").value; let outField = document.getElementById("conv_out");
+    let sciCheck = document.getElementById("conv_sci"); let decimals = document.getElementById("dec_places").value;
+    if (inStr === "") { outField.value = ""; return; }
+    let convertedResult = (Number(inStr) * Number(document.getElementById("conv_from_type").value)) / Number(document.getElementById("conv_to_type").value);
+    if (convertedResult.toString().length > 14 || convertedResult.toString().includes('e')) {
+        sciCheck.checked = true; sciCheck.disabled = true; updateSubPanelUIVisibility();
+        outField.value = formatScientificUniversal(convertedResult, decimals, "sci_format");
+    } else {
+        sciCheck.disabled = false; sciCheck.checked = userSciPreference; updateSubPanelUIVisibility();
+        outField.value = sciCheck.checked ? formatScientificUniversal(convertedResult, decimals, "sci_format") : convertedResult;
+    }
+}
+
+// ================= RESISTOR FINDER CODE SYSTEM =================
+function toggleResistorMode() {
+    resistorMode = (resistorMode === "A") ? "B" : "A";
+    document.getElementById("res_ohms_warn").style.display = "none";
+    document.getElementById("res_mode_a_container").style.display = resistorMode === "A" ? "flex" : "none";
+    document.getElementById("res_mode_a_output").style.display = resistorMode === "A" ? "flex" : "none";
+    document.getElementById("res_mode_b_container").style.display = resistorMode === "B" ? "flex" : "none";
+    document.getElementById("res_mode_b_output").style.display = resistorMode === "B" ? "flex" : "none";
+}
+
+function triggerResistorExecution() { 
+if(resistorMode === "A") calculateResistorFromOhms(); else calculateResistorFromColors(); }
+function applyBandBlockStyle(id, name) { let b = document.getElementById(id); let s = colorHexMap[name] || {bg:"#ccc",text:"#000"}; b.style.background = s.bg; b.style.color = s.text; b.innerText = name; }
+
+function calculateResistorFromOhms() {
+    let raw = document.getElementById("res_ohms_in").value.trim().toLowerCase(); let tol = document.getElementById("res_ohms_tol_select").value;
+    let warnEl = document.getElementById("res_ohms_warn");
+    
+    if(!raw) { 
+        warnEl.style.display = "none";
+        applyBandBlockStyle("disp_band1","Brown"); applyBandBlockStyle("disp_band2","Black"); applyBandBlockStyle("disp_band3","Black"); applyBandBlockStyle("disp_band4",tol); 
+        return; 
+    }
+    let m = 1; if(raw.endsWith("k")) { m = 1000; raw = raw.slice(0, -1); } else if(raw.endsWith("m")) { m = 1000000; raw = raw.slice(0, -1); }
+    let num = parseFloat(raw) * m; if(isNaN(num) || num <= 0) return;
+    
+    // 1. Max Input Check (Greater than 99 Billion Ohms)
+    if (num > 99000000000) {
+        warnEl.innerText = "The max input is 99,000,000,000. Try a smaller number instead.";
+        warnEl.style.display = "block";
+        applyBandBlockStyle("disp_band1", "Black");
+        applyBandBlockStyle("disp_band2", "Black");
+        applyBandBlockStyle("disp_band3", "Black");
+        applyBandBlockStyle("disp_band4", tol);
+        return;
+    }
+    
+    let exp = Math.floor(Math.log10(num)); let bVal = Math.round((num / Math.pow(10, exp)) * 10); let mExp = exp - 1;
+    if (bVal >= 100) { bVal = Math.floor(bVal / 10); mExp += 1; }
+    
+    // 2. Check for more than 2 significant figures
+    let reconstructed = bVal * Math.pow(10, mExp);
+    if (Math.abs(num - reconstructed) > num * 1e-6) {
+        warnEl.innerText = "The input should have 2 or less significant digits.";
+        warnEl.style.display = "block";
+        applyBandBlockStyle("disp_band1", "Black");
+        applyBandBlockStyle("disp_band2", "Black");
+        applyBandBlockStyle("disp_band3", "Black");
+        applyBandBlockStyle("disp_band4", tol);
+        return;
+    } else {
+        warnEl.style.display = "none";
+    }
+
+    applyBandBlockStyle("disp_band1", valueToColorArray[Math.floor(bVal / 10)] || "Brown");
+    applyBandBlockStyle("disp_band2", valueToColorArray[bVal % 10] || "Black");
+    applyBandBlockStyle("disp_band3", mExp === -1 ? "Gold" : (mExp === -2 ? "Silver" : valueToColorArray[mExp] || "Black"));
+    applyBandBlockStyle("disp_band4", tol);
+}
+function calculateResistorFromColors() {
+    let b1 = Number(document.getElementById("band1").value);
+    let b2 = Number(document.getElementById("band2").value);
+    let b3 = Number(document.getElementById("band3").value);
+    let b4 = document.getElementById("band4").value;
+
+    // Calculate base resistance value
+    let ohms = ((b1 * 10) + b2) * b3;
+    
+    // Format the value into a clean readable string (ohms, k, M, G)
+    let formattedOhms = ohms;
+    if (ohms >= 1e9) {
+        formattedOhms = (ohms / 1e9).toFixed(2).replace(/\.00$/, "").replace(/\.(\d)0$/, ".$1") + "M";
+    } else if (ohms >= 1e6) {
+        formattedOhms = (ohms / 1e6).toFixed(2).replace(/\.00$/, "").replace(/\.(\d)0$/, ".$1") + "M";
+    } else if (ohms >= 1000) {
+        formattedOhms = (ohms / 1000).toFixed(2).replace(/\.00$/, "").replace(/\.(\d)0$/, ".$1") + "k";
+    } else {
+        formattedOhms = ohms.toFixed(2).replace(/\.00$/, "").replace(/\.(\d)0$/, ".$1");
+    }
+
+    // Output clean result along with the tolerance percentage
+    document.getElementById("res_ohms_out").value = formattedOhms + " Ω ±" + b4 + "%";
+}
+// ================= BATTERY CALCULATOR PLATFORM ENGINE =================
+const batteryPrefixes = [
+    { name: "Kilo", power: 1e3 }, { name: "", power: 1e0 }, { name: "Milli", power: 1e-3 }, { name: "Micro", power: 1e-6 }
+];
+
+function switchBatTab(tab) {
+    currentBatTab = tab;
+    document.querySelectorAll("#battery_page .tabs .tab").forEach(t => t.classList.remove('active'));
+    if(document.getElementById("bat_tab_" + tab)) {
+        document.getElementById("bat_tab_" + tab).classList.add("active");
+    }
+    
+    let label1 = document.getElementById("bat_in1_type");
+    let label2 = document.getElementById("bat_in2_type");
+    let labelOut = document.getElementById("bat_out_type");
+
+    label1.innerHTML = ""; label2.innerHTML = ""; labelOut.innerHTML = "";
+    document.getElementById("bat_in1").value = ""; document.getElementById("bat_in2").value = ""; document.getElementById("bat_out").value = "";
+
+    if (tab === "V") {
+        document.getElementById("bat_title").innerText = "Calculate Battery Voltage";
+        populateBatSelections(label1, "Watt-hours (Wh)", "Wh");
+        populateBatSelections(label2, "Amp-hours (Ah)", "Ah");
+        populateBatSelections(labelOut, "Volts (V)", "V");
+    } else if (tab === "Wh") {
+        document.getElementById("bat_title").innerText = "Calculate Battery Watt-hours";
+        populateBatSelections(label1, "Volts (V)", "V");
+        populateBatSelections(label2, "Amp-hours (Ah)", "Ah");
+        populateBatSelections(labelOut, "Watt-hours (Wh)", "Wh");
+    } else {
+        document.getElementById("bat_title").innerText = "Calculate Battery Amp-hours";
+        populateBatSelections(label1, "Watt-hours (Wh)", "Wh");
+        populateBatSelections(label2, "Volts (V)", "V");
+        populateBatSelections(labelOut, "Amp-hours (Ah)", "Ah");
+    }
+    document.getElementById("bat_sci").checked = userBatSciPreference;
+    checkBatTabConversion();
+}
+
+function populateBatSelections(element, titleString, standardUnit) {
+    batteryPrefixes.forEach(p => {
+        if (standardUnit === "V" && p.name === "Micro") return;
+        let labelText = p.name ? (p.name + titleString.toLowerCase().split(" ")[0]) : titleString;
+        let opt = document.createElement("option");
+        opt.value = p.power; opt.text = labelText;
+        element.appendChild(opt);
+    });
+    element.selectedIndex = 1;
+}
+
+function checkBatTabConversion() {
+    let v1 = document.getElementById("bat_in1").value;
+    let v2 = document.getElementById("bat_in2").value;
+    document.getElementById("bat_in1_warn").style.display = "none";
+    document.getElementById("bat_in2_warn").style.display = "none";
+    document.getElementById("bat_calc_btn").disabled = (v1 === "" || v2 === "");
+}
+
+function handleBatSciToggle() {
+    userBatSciPreference = document.getElementById("bat_sci").checked; updateBatSubPanelVisibility(); runBatConversion();
+}
+
+function updateBatSubPanelVisibility() {
+    let isActive = document.getElementById("bat_sci").checked;
+    let r1 = document.getElementById("bat_mode_pow"); let r2 = document.getElementById("bat_mode_e"); let s1 = document.getElementById("bat_dec_places");
+    let l1 = document.getElementById("lbl_bat_pow"); let l2 = document.getElementById("lbl_bat_e"); let l3 = document.getElementById("lbl_bat_decimals");
+    r1.disabled = !isActive; r2.disabled = !isActive; s1.disabled = !isActive;
+    let op = isActive ? "1" : "0.4"; let cur = isActive ? "pointer" : "not-allowed";
+    l1.style.opacity = op; l1.style.cursor = cur; r1.style.cursor = cur;
+    l2.style.opacity = op; l2.style.cursor = cur; r2.style.cursor = cur;
+    l3.style.opacity = op; l3.style.cursor = cur; s1.style.cursor = cur;
+}
+
+function runBatConversion() {
+    let val1 = document.getElementById("bat_in1").value; let val2 = document.getElementById("bat_in2").value;
+    let outField = document.getElementById("bat_out"); let sciCheck = document.getElementById("bat_sci");
+    let decimals = document.getElementById("bat_dec_places").value;
+    let warn1 = document.getElementById("bat_in1_warn"); let warn2 = document.getElementById("bat_in2_warn");
+
+    let hasError = false;
+    if (Math.abs(Number(val1)) > 999999999) { warn1.style.display = "block"; hasError = true; }
+    if (Math.abs(Number(val2)) > 999999999) { warn2.style.display = "block"; hasError = true; }
+    if (hasError) { outField.value = ""; return; }
+
+    let v1_actual = Number(val1) * Number(document.getElementById("bat_in1_type").value);
+    let v2_actual = Number(val2) * Number(document.getElementById("bat_in2_type").value);
+    let rawResult = 0;
+
+    if (currentBatTab === "V") rawResult = v1_actual / v2_actual;      
+    else if (currentBatTab === "Wh") rawResult = v1_actual * v2_actual; 
+    else if (currentBatTab === "Ah") rawResult = v1_actual / v2_actual; 
+
+    let convertedResult = rawResult / Number(document.getElementById("bat_out_type").value);
+
+    if (convertedResult.toString().length > 14 || convertedResult.toString().includes('e')) {
+        sciCheck.checked = true; sciCheck.disabled = true; updateBatSubPanelVisibility();
+        outField.value = formatScientificUniversal(convertedResult, decimals, "bat_sci_format");
+    } else {
+        sciCheck.disabled = false; sciCheck.checked = userBatSciPreference; updateBatSubPanelVisibility();
+        outField.value = sciCheck.checked ? formatScientificUniversal(convertedResult, decimals, "bat_sci_format") : convertedResult;
+    }
+}
+
+// ================= SECTION 2: RUNTIME CALCULATOR =================
+function checkBatteryLife() {
+    let load = document.getElementById("life_load_val").value;
+    let cap = document.getElementById("life_cap_val").value;
+    document.getElementById("life_load_warn").style.display = "none";
+    document.getElementById("life_cap_warn").style.display = "none";
+    document.getElementById("life_calc_btn").disabled = (load === "" || cap === "");
+}
+
+function calculateBatteryLife() {
+    let loadStr = document.getElementById("life_load_val").value;
+    let capStr = document.getElementById("life_cap_val").value;
+    let outField = document.getElementById("life_out_val");
+    let sciCheck = document.getElementById("life_sci");
+    let warn1 = document.getElementById("life_load_warn"); 
+    let warn2 = document.getElementById("life_cap_warn");
+
+    let hasError = false;
+    if (Math.abs(Number(loadStr)) > 999999999) { warn1.style.display = "block"; hasError = true; }
+    if (Math.abs(Number(capStr)) > 999999999) { warn2.style.display = "block"; hasError = true; }
+    if (hasError) { outField.value = ""; return; }
+
+    let load = parseFloat(loadStr) * parseFloat(document.getElementById("life_load_unit").value);
+    let cap = parseFloat(capStr) * parseFloat(document.getElementById("life_cap_unit").value);
+
+    if (isNaN(load) || isNaN(cap) || load <= 0) { outField.value = ""; return; }
+
+    let hours = cap / load; 
+    let targetUnit = document.getElementById("life_out_unit").value;
+    let calculatedOutput = hours;
+
+    if (targetUnit === "years") calculatedOutput = hours / (24 * 365);
+    else if (targetUnit === "days") calculatedOutput = hours / 24;
+    else if (targetUnit === "mins") calculatedOutput = hours * 60;
+    else if (targetUnit === "secs") calculatedOutput = hours * 3600;
+
+    if (calculatedOutput.toString().length > 14 || calculatedOutput.toString().includes('e')) {
+        sciCheck.checked = true; outField.value = calculatedOutput.toExponential(4);
+    } else {
+        outField.value = sciCheck.checked ? calculatedOutput.toExponential(4) : calculatedOutput.toFixed(2).replace(/\.00$/, "");
+    }
+}
+
+// ================= SECTION 3: CURRENT LIMIT CALCULATOR =================
+function checkCurrentLimit() {
+    let volts = document.getElementById("limit_volts").value;
+    let ohms = document.getElementById("limit_ohms").value;
+    document.getElementById("limit_v_warn").style.display = "none";
+    document.getElementById("limit_r_warn").style.display = "none";
+    document.getElementById("limit_calc_btn").disabled = (volts === "" || ohms === "");
+}
+
+function calculateCurrentLimit() {
+    let vStr = document.getElementById("limit_volts").value;
+    let rStr = document.getElementById("limit_ohms").value;
+    let outField = document.getElementById("limit_out");
+    let warn1 = document.getElementById("limit_v_warn");
+    let warn2 = document.getElementById("limit_r_warn");
+
+    let hasError = false;
+    if (Math.abs(Number(vStr)) > 999999999) { warn1.style.display = "block"; hasError = true; }
+    if (Math.abs(Number(rStr)) > 999999999) { warn2.style.display = "block"; hasError = true; }
+    if (hasError) { outField.value = ""; return; }
+
+    let volts = parseFloat(vStr); let ohms = parseFloat(rStr);
+    if (isNaN(volts) || isNaN(ohms) || ohms <= 0) { outField.value = ""; return; }
+    outField.value = (volts / ohms).toFixed(3).replace(/\.000$/, "");
+}
+
+// ================= SECTION 4: VOLTAGE SAG ENGINE =================
+function checkVoltageSag() {
+    let ohms = document.getElementById("sag_ohms").value;
+    let load = document.getElementById("sag_load_val").value;
+    document.getElementById("sag_r_warn").style.display = "none";
+    document.getElementById("sag_load_warn").style.display = "none";
+    document.getElementById("sag_calc_btn").disabled = (ohms === "" || load === "");
+}
+
+function calculateVoltageSag() {
+    let rStr = document.getElementById("sag_ohms").value;
+    let lStr = document.getElementById("sag_load_val").value;
+    let outField = document.getElementById("sag_out");
+    let warn1 = document.getElementById("sag_r_warn");
+    let warn2 = document.getElementById("sag_load_warn");
+
+    let hasError = false;
+    if (Math.abs(Number(rStr)) > 999999999) { warn1.style.display = "block"; hasError = true; }
+    if (Math.abs(Number(lStr)) > 999999999) { warn2.style.display = "block"; hasError = true; }
+    if (hasError) { outField.value = ""; return; }
+
+    let ohms = parseFloat(rStr);
+    let load = parseFloat(lStr) * parseFloat(document.getElementById("sag_load_unit").value);
+    if (isNaN(ohms) || isNaN(load)) { outField.value = ""; return; }
+    outField.value = (load * ohms).toFixed(4).replace(/\.0000$/, "");
+}
+
+init();
+</script>
+
+</body>
+</html>
