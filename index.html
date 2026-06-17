@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Advanced Electrical Tools</title>
+
 <style>
 /* Base Reset & Layout Split */
 body {
@@ -405,6 +406,26 @@ button:disabled {
                 <div id="r_out_warn" class="warning-text">This output exceeds 18 digit limit.</div>
             </div>
         </div>
+
+        <div class="row" style="display: flex; flex-direction: column; align-items: flex-start; margin-top: 25px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <label id="calc_sci_label" style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; font-size: 14px;">
+                <input type="checkbox" id="calc_sci" onchange="handleCalcSciToggle()" style="margin: 0; cursor: pointer; width: auto;"> Give output in scientific notation
+            </label>
+
+            <div id="calc_sci_sub_panel" class="sci-sub-options">
+                <label class="sci-sub-label" id="lbl_calc_pow"><input type="radio" id="calc_mode_pow" name="calc_sci_format" value="pow" checked onchange="recalculateCurrentTab()"> Give in *10ˣ</label>
+                <label class="sci-sub-label" id="lbl_calc_e"><input type="radio" id="calc_mode_e" name="calc_sci_format" value="e" onchange="recalculateCurrentTab()"> Give in e±X</label>
+                <label class="sci-sub-label" id="lbl_calc_decimals">Decimal places: 
+                    <select id="calc_dec_places" onchange="recalculateCurrentTab()">
+                        <option value="sig" selected>Round off to first sig. digit</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                        <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </label>
+            </div>
+        </div>
     </div>
 
 
@@ -681,9 +702,7 @@ button:disabled {
         </div>
 
     </div>
-<h6 style="font-style: italic; text-align: center; margin-top: 60px; color: #888;">
-    This project is entirely made by Ashhal Abbas.
-</h6>
+
 </div>
 
 <script>
@@ -704,6 +723,7 @@ let currentConvTab = "V";
 let currentBatTab = "V";
 let userSciPreference = false;
 let userBatSciPreference = false;
+let userCalcSciPreference = false; 
 let resistorMode = "A"; 
 
 const colorHexMap = {
@@ -766,6 +786,10 @@ function init(){
     });
     setDefaultCalc("V","I","R"); setDefaultCalc("P","I","V"); setDefaultCalc("I","V","R"); setDefaultCalc("R","V","I");
     populateConvDropdowns();
+
+    document.getElementById("calc_sci").checked = userCalcSciPreference;
+    updateCalcSubPanelVisibility();
+
     updateSubPanelUIVisibility(); 
     updateBatSubPanelVisibility();
 }
@@ -819,15 +843,34 @@ function solveCalc(tab){
     if(tab==="I"){
         if(map.V !== undefined && map.R !== undefined) result = map.V / map.R;
         else if(map.P !== undefined && map.V !== undefined) result = map.P / map.V;
-        else if(map.P !== undefined && map.R !== undefined) result = Math.sqrt(map.P / map.V);
+        else if(map.P !== undefined && map.R !== undefined) result = Math.sqrt(map.P / map.R);
     }
     if(tab==="R"){
         if(map.V !== undefined && map.I !== undefined) result = map.V / map.I;
-        else if(map.V !== undefined && map.P !== undefined) result = Math.pow(map.V,2) / map.P;
+        else if(map.V !== undefined && map.P !== undefined) result = Math.pow(v1,2) / map.P;
         else if(map.P !== undefined && map.I !== undefined) result = map.P / Math.pow(map.I,2);
     }
-    if(!isFinite(result) || Math.abs(result) >= 1e18){ outWarn.style.display = "block"; result = "-"; }
-    document.getElementById(tab.toLowerCase()+"_out").value=result;
+    
+    let sciCheck = document.getElementById("calc_sci");
+    let decimals = document.getElementById("calc_dec_places").value;
+
+    if (!isFinite(result)) {
+        outWarn.style.display = "block";
+        result = "-";
+    } else if (result !== 0 && (result.toString().length > 14 || Math.abs(result) >= 1e18 || result.toString().includes('e'))) {
+        sciCheck.checked = true;
+        sciCheck.disabled = true;
+        updateCalcSubPanelVisibility();
+        result = formatScientificUniversal(result, decimals, "calc_sci_format");
+    } else {
+        sciCheck.disabled = false;
+        sciCheck.checked = userCalcSciPreference;
+        updateCalcSubPanelVisibility();
+        if (sciCheck.checked) {
+            result = formatScientificUniversal(result, decimals, "calc_sci_format");
+        }
+    }
+    document.getElementById(tab.toLowerCase()+"_out").value = result;
 }
 
 // ================= CONVERTER ENGINE CONTROLS =================
@@ -842,7 +885,6 @@ function switchConvTab(tab) {
     updateSubPanelUIVisibility();
 }
 
-// ================= CONVERTER ENGINE CONTROLS =================
 function populateConvDropdowns() {
     let fromSel = document.getElementById("conv_from_type"); let toSel = document.getElementById("conv_to_type");
     fromSel.innerHTML = ""; toSel.innerHTML = ""; let noun = convUnits[currentConvTab].noun;
@@ -856,6 +898,36 @@ function populateConvDropdowns() {
 
 function handleManualSciToggle() {
     userSciPreference = document.getElementById("conv_sci").checked; updateSubPanelUIVisibility(); runConversion();
+}
+
+function handleCalcSciToggle() {
+    userCalcSciPreference = document.getElementById("calc_sci").checked;
+    updateCalcSubPanelVisibility();
+    recalculateCurrentTab();
+}
+
+function updateCalcSubPanelVisibility() {
+    let isActive = document.getElementById("calc_sci").checked;
+    let r1 = document.getElementById("calc_mode_pow"); 
+    let r2 = document.getElementById("calc_mode_e"); 
+    let s1 = document.getElementById("calc_dec_places");
+    let l1 = document.getElementById("lbl_calc_pow"); 
+    let l2 = document.getElementById("lbl_calc_e"); 
+    let l3 = document.getElementById("lbl_calc_decimals");
+    
+    r1.disabled = !isActive; r2.disabled = !isActive; s1.disabled = !isActive;
+    let op = isActive ? "1" : "0.4"; let cur = isActive ? "pointer" : "not-allowed";
+    l1.style.opacity = op; l1.style.cursor = cur; r1.style.cursor = cur;
+    l2.style.opacity = op; l2.style.cursor = cur; r2.style.cursor = cur;
+    l3.style.opacity = op; l3.style.cursor = cur; s1.style.cursor = cur;
+}
+
+function recalculateCurrentTab() {
+    let activePanel = document.querySelector("#calculator_page .panel.active").id;
+    let btn = document.getElementById(activePanel.toLowerCase() + "_btn");
+    if (!btn.disabled) {
+        solveCalc(activePanel);
+    }
 }
 
 function updateSubPanelUIVisibility() {
@@ -927,7 +999,6 @@ function calculateResistorFromOhms() {
     let m = 1; if(raw.endsWith("k")) { m = 1000; raw = raw.slice(0, -1); } else if(raw.endsWith("m")) { m = 1000000; raw = raw.slice(0, -1); }
     let num = parseFloat(raw) * m; if(isNaN(num) || num <= 0) return;
     
-    // 1. Max Input Check (Greater than 99 Billion Ohms)
     if (num > 99000000000) {
         warnEl.innerText = "The max input is 99,000,000,000. Try a smaller number instead.";
         warnEl.style.display = "block";
@@ -941,7 +1012,6 @@ function calculateResistorFromOhms() {
     let exp = Math.floor(Math.log10(num)); let bVal = Math.round((num / Math.pow(10, exp)) * 10); let mExp = exp - 1;
     if (bVal >= 100) { bVal = Math.floor(bVal / 10); mExp += 1; }
     
-    // 2. Check for more than 2 significant figures
     let reconstructed = bVal * Math.pow(10, mExp);
     if (Math.abs(num - reconstructed) > num * 1e-6) {
         warnEl.innerText = "The input should have 2 or less significant digits.";
@@ -960,30 +1030,7 @@ function calculateResistorFromOhms() {
     applyBandBlockStyle("disp_band3", mExp === -1 ? "Gold" : (mExp === -2 ? "Silver" : valueToColorArray[mExp] || "Black"));
     applyBandBlockStyle("disp_band4", tol);
 }
-function calculateResistorFromColors() {
-    let b1 = Number(document.getElementById("band1").value);
-    let b2 = Number(document.getElementById("band2").value);
-    let b3 = Number(document.getElementById("band3").value);
-    let b4 = document.getElementById("band4").value;
 
-    // Calculate base resistance value
-    let ohms = ((b1 * 10) + b2) * b3;
-    
-    // Format the value into a clean readable string (ohms, k, M, G)
-    let formattedOhms = ohms;
-    if (ohms >= 1e9) {
-        formattedOhms = (ohms / 1e9).toFixed(2).replace(/\.00$/, "").replace(/\.(\d)0$/, ".$1") + "M";
-    } else if (ohms >= 1e6) {
-        formattedOhms = (ohms / 1e6).toFixed(2).replace(/\.00$/, "").replace(/\.(\d)0$/, ".$1") + "M";
-    } else if (ohms >= 1000) {
-        formattedOhms = (ohms / 1000).toFixed(2).replace(/\.00$/, "").replace(/\.(\d)0$/, ".$1") + "k";
-    } else {
-        formattedOhms = ohms.toFixed(2).replace(/\.00$/, "").replace(/\.(\d)0$/, ".$1");
-    }
-
-    // Output clean result along with the tolerance percentage
-    document.getElementById("res_ohms_out").value = formattedOhms + " Ω ±" + b4 + "%";
-}
 // ================= BATTERY CALCULATOR PLATFORM ENGINE =================
 const batteryPrefixes = [
     { name: "Kilo", power: 1e3 }, { name: "", power: 1e0 }, { name: "Milli", power: 1e-3 }, { name: "Micro", power: 1e-6 }
