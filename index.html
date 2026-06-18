@@ -272,6 +272,45 @@ button:disabled {
 .resistor-select {
     width: 125px !important;
 }
+
+/* ================= GLOBAL FOOTER STYLES ================= */
+.project-footer {
+    text-align: center;
+    margin-top: 60px;
+    color: #888;
+    font-size: 11px;
+    font-style: italic;
+}
+
+.project-footer p {
+    margin: 6px 0;
+}
+
+.project-footer .update-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.project-footer button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: #1a0dab;       /* Classic Google Search Blue */
+    text-decoration: underline;
+    font-size: 11px;
+    font-family: inherit;
+    font-style: normal;   /* Keeps the link clean and readable */
+    cursor: pointer;
+    display: inline;
+}
+
+.project-footer button:hover {
+    background: none;     /* Overrides main gray hover block */
+    color: #0b0080;       /* Darker blue on hover */
+}
 </style>
 </head>
 <body>
@@ -702,9 +741,15 @@ button:disabled {
         </div>
 
     </div>
-<h6 style="font-style: italic; text-align: center; margin-top: 60px; color: #888;">
-    This project is entirely made by Ashhal Abbas.
-</h6>
+
+    <!-- Persistent Global Footer -->
+    <div class="project-footer">
+        <p>This project is entirely made by Ashhal Abbas.</p>
+        <p class="update-line">
+            This project is currently being updated. See more at 
+            <button onclick="window.location.href='updates.html'">Updates</button>
+        </p>
+    </div>
 </div>
 
 <script>
